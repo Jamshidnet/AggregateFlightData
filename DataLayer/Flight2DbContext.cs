@@ -37,7 +37,7 @@ namespace DataLayer
             {
                 migrationBuilder.InsertData(
                     table: "Flights",
-                    columns: new[] { "FlightNumber", "Airline", "Departure", "Destination", "DepartureTime", "ArrivalTime", "Price", "Layovers", "IsBooked" },
+                    columns: new[] { "FlightNumber", "Airline", "Departure", "Destination", "DepartureTime", "ArrivalTime", "Price", "Layovers", "TotalPlacesCount", "AvialablePlacesCount" },
                     values: new object[]
                     {
                     $"FL{random.Next(100, 999)}-{random.Next(1000, 9999)}",  // Flight number
@@ -46,9 +46,9 @@ namespace DataLayer
                     new[] { "New York", "Los Angeles", "Chicago", "London", "Paris", "Tokyo", "Berlin" }[random.Next(7)],  // Destination City
                     DateTime.Now.AddDays(random.Next(0, 365)).ToUniversalTime(),  // Random Departure Time in the next year
                     DateTime.Now.AddDays(random.Next(1, 365)).ToUniversalTime(),  // Random Arrival Time
-                    random.Next(50, 1500) + random.NextDouble(),  // Random Price
-                    random.Next(0, 3),  // Random Layovers (0 to 2)
-                    random.NextDouble() > 0.5  // Random IsBooked (true or false)
+                    random.Next(50, 1500) + random.NextDouble(),  
+                    random.Next(50, 200),
+                    random.Next(10, 20),
                     });
             }
         }

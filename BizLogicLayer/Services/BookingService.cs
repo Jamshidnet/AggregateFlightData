@@ -19,11 +19,11 @@ namespace BizLogicLayer.Services
 
         public bool BookFlight(BookingRequest request)
         {
-            var flight = _allFlights.FirstOrDefault(f => f.FlightNumber == request.FlightNumber);
-            if (flight == null || flight.IsBooked)
-                return false;
+            //var flight = _allFlights.FirstOrDefault(f => f.FlightNumber == request.FlightNumber);
+            //if (flight == null || flight.IsBooked)
+            //    return false;
 
-            flight.IsBooked = true;
+            //flight.IsBooked = true;
             return true;
         }
     }

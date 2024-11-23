@@ -12,7 +12,6 @@ namespace BizLogicLayer.Services
         private readonly IMemoryCache _cache;
         private readonly FlightDbContext _flightDbContext;
         private readonly Flight2DbContext _secondFlightDbContext;
-        private const int SourceTimeoutMilliseconds = 2500; // 2.5 seconds timeout
 
         public FlightAggregatorService(IMemoryCache cache, FlightDbContext flightDbContext, Flight2DbContext secondFlightDbContext)
         {
@@ -32,20 +31,14 @@ namespace BizLogicLayer.Services
             }
 
             // Fetch from sources with timeout handling
-            var source1Task = _flightDbContext.Flights.ToListAsync();
-            var source2Task = _secondFlightDbContext.Flights.ToListAsync();
+            var source1Task = await _flightDbContext.Flights.ToListAsync();
+            var source2Task = await _secondFlightDbContext.Flights.ToListAsync();
 
             var tasks = new[] { source1Task, source2Task };
 
             var allFlights = new List<Flight>();
             foreach (var task in tasks)
-            {
-                var completedTask = await Task.WhenAny(task, Task.Delay(SourceTimeoutMilliseconds));
-                if (completedTask == task)
-                {
-                    allFlights.AddRange(await task); // Task completed within timeout
-                }
-            }
+                    allFlights.AddRange(task);
 
             // Apply filtering
             if (!string.IsNullOrEmpty(criteria.Departure))

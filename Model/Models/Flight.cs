@@ -11,6 +11,7 @@
         public DateTime ArrivalTime { get; set; }
         public decimal Price { get; set; }
         public int Layovers { get; set; }
-        public bool IsBooked { get; set; }
+        public int TotalPlacesCount { get; set; }
+        public int AvialablePlacesCount { get; set; }
     }
 }
