@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 
 namespace BizLogicLayer.Services
 {
-    public class FlightService
+    public class FlightService  : IFlightService
     {
         private readonly HttpClient _httpClient;
 

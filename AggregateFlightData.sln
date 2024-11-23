@@ -11,7 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedModel", "Model\Shared
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BizLogicLayer", "BizLogicLayer\BizLogicLayer.csproj", "{748DBC8A-0C88-4844-BE90-BD4A52A31ACC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataLayer", "DataLayer\DataLayer.csproj", "{2DE99634-47F4-4FC6-B7B8-4667006623DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataLayer", "DataLayer\DataLayer.csproj", "{2DE99634-47F4-4FC6-B7B8-4667006623DF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorClient2", "BlazorClient2\BlazorClient2.csproj", "{3B15A8C2-0F96-423F-8C7A-A00AB0345FDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApp1", "BlazorApp1\BlazorApp1.csproj", "{C241FF18-FF94-407C-BD1F-B73E74C16097}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,14 @@ Global
 		{2DE99634-47F4-4FC6-B7B8-4667006623DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DE99634-47F4-4FC6-B7B8-4667006623DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DE99634-47F4-4FC6-B7B8-4667006623DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B15A8C2-0F96-423F-8C7A-A00AB0345FDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B15A8C2-0F96-423F-8C7A-A00AB0345FDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B15A8C2-0F96-423F-8C7A-A00AB0345FDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B15A8C2-0F96-423F-8C7A-A00AB0345FDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C241FF18-FF94-407C-BD1F-B73E74C16097}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C241FF18-FF94-407C-BD1F-B73E74C16097}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C241FF18-FF94-407C-BD1F-B73E74C16097}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C241FF18-FF94-407C-BD1F-B73E74C16097}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
