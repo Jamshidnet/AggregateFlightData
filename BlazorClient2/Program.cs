@@ -4,6 +4,7 @@ using DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Serilog;
+using Serilog.Sinks.PostgreSQL;
 
 namespace BlazorClient2
 {
@@ -14,14 +15,17 @@ namespace BlazorClient2
             var builder = WebApplication.CreateBuilder(args);
 
             Log.Logger = new LoggerConfiguration()
-    .WriteTo.PostgreSQL(
-        connectionString: "Host=myserver;Database=mydb;Username=myuser;Password=mypassword",
-        tableName: "logs"
-        //columnOptions: new ColumnOptions { Store = { "Message", "Timestamp", "Level", "Exception" } }
-        )
-    .CreateLogger();
+                .MinimumLevel.Information()
+                .WriteTo.PostgreSQL(
+                    connectionString: builder.Configuration.GetConnectionString("FirstSource"),
+                    tableName: "logs",
+                    columnOptions: ColumnOptions.Default,
+                    needAutoCreateTable: true
+                    )
+                .CreateLogger();
 
-            //builder.Host.UseSerilog();
+            builder.Logging.AddSerilog();
+
 
             // Add services to the container.
             builder.Services.AddRazorComponents()
