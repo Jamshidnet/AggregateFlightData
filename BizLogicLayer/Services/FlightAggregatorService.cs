@@ -1,12 +1,10 @@
-﻿using SharedModel.Models;
+﻿using BizLogicLayer.Extensions;
+using DataLayer;
+using Microsoft.Extensions.Caching.Memory;
+using SharedModel.Models;
 
 namespace BizLogicLayer.Services
 {
-    using DataLayer;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.Caching.Memory;
-    using System.Threading;
-
     public class FlightAggregatorService : IFlightAggregatorService
     {
         private readonly IMemoryCache _cache;
@@ -20,51 +18,81 @@ namespace BizLogicLayer.Services
             _secondFlightDbContext = secondFlightDbContext;
         }
 
-        public async Task<IEnumerable<Flight>> GetAggregatedFlightsAsync(FlightSearchCriteria criteria)
+
+        public IEnumerable<Flight> GetAggregatedFlights(FlightSearchCriteria criteria)
         {
             var cacheKey = $"Search_{criteria.Departure}_{criteria.Destination}_{criteria.DepartureDate?.ToString("yyyyMMdd")}_{criteria.MaxPrice}_{criteria.MaxLayovers}_{criteria.Airline}";
 
-            // Try to get cached data
             if (_cache.TryGetValue(cacheKey, out List<Flight> cachedFlights))
             {
                 return cachedFlights;
             }
 
-            // Fetch from sources with timeout handling
-            var source1Task = await _flightDbContext.Flights.ToListAsync();
-            var source2Task = await _secondFlightDbContext.Flights.ToListAsync();
+            var source1Task = _flightDbContext.Flights.ApplyFilters(criteria).ToList();
+            var source2Task = _secondFlightDbContext.Flights.ApplyFilters(criteria).ToList();
 
             var tasks = new[] { source1Task, source2Task };
 
             var allFlights = new List<Flight>();
             foreach (var task in tasks)
-                    allFlights.AddRange(task);
-
-            // Apply filtering
-            if (!string.IsNullOrEmpty(criteria.Departure))
-                allFlights = allFlights.Where(f => f.Departure == criteria.Departure).ToList();
-
-            if (!string.IsNullOrEmpty(criteria.Destination))
-                allFlights = allFlights.Where(f => f.Destination == criteria.Destination).ToList();
-
-            if (criteria.DepartureDate.HasValue)
-                allFlights = allFlights.Where(f => f.DepartureTime.Date == criteria.DepartureDate.Value.Date).ToList();
-
-            if (criteria.MaxPrice.HasValue)
-                allFlights = allFlights.Where(f => f.Price <= criteria.MaxPrice.Value).ToList();
-
-            if (criteria.MaxLayovers.HasValue)
-                allFlights = allFlights.Where(f => f.Layovers <= criteria.MaxLayovers.Value).ToList();
-
-            if (!string.IsNullOrEmpty(criteria.Airline))
-                allFlights = allFlights.Where(f => f.Airline == criteria.Airline).ToList();
+                allFlights.AddRange(task);
 
             // Cache the result
             _cache.Set(cacheKey, allFlights, TimeSpan.FromMinutes(10));
 
             return allFlights;
         }
+
+
+
+        public string FlightCountMinimizer(int flightId, string passengerName, string passengerEmail)
+        {
+            var flight = _flightDbContext.Set<Flight>().Find(flightId); 
+
+            if (flight != null)
+            {
+                if (flight.AvialablePlacesCount == 0)
+                    return "Out";
+
+                flight.AvialablePlacesCount--;
+
+                _flightDbContext.Set<BookingRequest>().Add(new BookingRequest 
+                { 
+                    PassengerEmail = passengerEmail, 
+                    PassengerName  = passengerName,
+                    FlightId = flight.Id,
+                });
+
+                _flightDbContext.SaveChanges();
+
+                return "Ok";
+            }
+            else
+            {
+                var flight2 = _secondFlightDbContext.Set<Flight>().Find(flightId);
+
+                if (flight2 != null)
+                {
+                    if (flight2.AvialablePlacesCount == 0)
+                        return "Out";
+
+                    flight2.AvialablePlacesCount--;
+
+                    _secondFlightDbContext.Set<BookingRequest>().Add(new BookingRequest
+                    {
+                        PassengerEmail = passengerEmail,
+                        PassengerName = passengerName,
+                        FlightId = flight.Id,
+                    });
+
+                    _flightDbContext.SaveChanges();
+
+                    return "Ok";
+                }
+            }
+
+            return "NotFound";
+        }
     }
-
-
 }
+

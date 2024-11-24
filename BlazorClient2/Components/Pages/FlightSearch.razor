@@ -2,7 +2,7 @@
 @rendermode InteractiveServer
 @using BizLogicLayer.Services
 @using SharedModel.Models
-@inject BookingService BookingService
+@inject IBookingService BookingService
 @inject IFlightAggregatorService FlightAggregatorService
 
 <h3 class="text-primary">Search Flights</h3>
@@ -42,23 +42,44 @@
     </div>
 </div>
 
-
 @if (flights != null && flights.Any())
 {
-    <h3 class="text-success">Search Results</h3>
-    <ul class="list-group">
-        @foreach (var flight in PaginatedFlights)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>
-                    <strong>@flight.FlightNumber</strong> - @flight.Departure to @flight.Destination - $@flight.Price
-                </span>
-                <button class="btn btn-sm btn-outline-success" @onclick="() => ShowBookingModal(flight)">
-                    Book
-                </button>
-            </li>
-        }
-    </ul>
+    <h3 class="text-success text-center">Flights</h3>
+    <table class="table table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th>Flight Number</th>
+                <th>Departure</th>
+                <th>Destination</th>
+                <th>Price</th>
+                <th>Total Seats</th>
+                <th>Available Seats</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var flight in PaginatedFlights)
+            {
+                <tr>
+                    <td><strong>@flight.FlightNumber</strong></td>
+                    <td>@flight.Departure</td>
+                    <td>@flight.Destination</td>
+                    <td>$@flight.Price.ToString("F2")</td>
+                    <td>@flight.TotalPlacesCount</td>
+                    <td>@flight.AvialablePlacesCount</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-success"
+                                @onclick="() => ShowBookingModal(flight)"
+                                disabled="@(flight.AvialablePlacesCount == 0)">
+                            Book
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
 
     <!-- Pagination controls -->
     <div class="d-flex justify-content-center align-items-center my-3">
@@ -92,7 +113,7 @@
             Last
         </button>
     </div>
-    
+
     <!-- Total rows displayed -->
     <div class="text-center mt-3">
         <p>Showing @PaginatedFlights.Count of @flights.Count flights</p>
@@ -106,11 +127,13 @@ else if (flights != null)
 
 @if (showBookingModal)
 {
-    <div class="modal-backdrop" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                                  background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center;
-                                  align-items: center; z-index: 1050;">
-        <div class="modal" style="background: #fff; padding: 20px; margin: 20px; border-radius: 8px; display : block;
-                              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+    <div class="modal-backdrop" style="
+    position: fixed;  height: 100%;
+    background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center;
+    align-items: center; z-index: 1050;">
+        <div class="modal" style=" 
+        background: #fff; padding: 20px; width: 300px ; top : unset; border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); text-align: center;display: flow; align-self : center;" >
             <h3>Confirm Booking</h3>
             <p>Flight: @selectedFlight?.FlightNumber</p>
 
@@ -124,7 +147,7 @@ else if (flights != null)
             </div>
 
             <div class="modal-footer">
-                <button class="btn btn-secondary" @onclick="CloseBookingModal">Cancel</button>
+                <button class="btn btn-secondary" @onclick="HandleClose">Cancel</button>
                 <button type="button" class="btn btn-primary" @onclick="ConfirmBooking"
                         disabled="@(string.IsNullOrWhiteSpace(passengerName) || string.IsNullOrWhiteSpace(passengerEmail))">
                     Confirm
@@ -133,6 +156,15 @@ else if (flights != null)
         </div>
     </div>
 }
+
+@if (!string.IsNullOrEmpty(modalResult))
+{
+    <div style="position: fixed; top: 20px; right: 20px; background: #f8d7da; color: #721c24; padding: 10px 20px;
+                border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); z-index: 1051;">
+        @modalResult
+    </div>
+}
+
 
 
 @code {
@@ -144,19 +176,19 @@ else if (flights != null)
     private string passengerName;
     private string passengerEmail;
     private List<Flight> PaginatedFlights => flights.Skip((CurrentPage - 1) * ItemsPerPage).Take(ItemsPerPage).ToList();
-
+    private string modalResult = string.Empty;
     private int CurrentPage { get; set; } = 1;
     private int ItemsPerPage { get; set; } = 20;
     private int TotalPages => (int)Math.Ceiling(flights.Count / (double)ItemsPerPage);
     private bool IsFirstPage => CurrentPage == 1;
     private bool IsLastPage => CurrentPage == TotalPages;
 
-    private async Task SearchFlights()
+    private void SearchFlights()
     {
         isLoading = true;
         try
         {
-            var result = await FlightAggregatorService.GetAggregatedFlightsAsync(searchCriteria);
+            var result = FlightAggregatorService.GetAggregatedFlights(searchCriteria);
 
             flights = result.ToList();
         }
@@ -202,38 +234,50 @@ else if (flights != null)
         showBookingModal = true;
     }
 
-    private void CloseBookingModal()
+    private void HandleClose()
     {
+        modalResult = CloseBookingModal(); // Call the method that returns a string result
         showBookingModal = false;
-        selectedFlight = null;
-        passengerName = string.Empty;
-        passengerEmail = string.Empty;
     }
 
-    private async Task ConfirmBooking()
+    private string CloseBookingModal()
+    {
+        // Return a message (you can customize this as needed)
+        return "Booking canceled.";
+    }
+
+
+    private void ConfirmBooking()
     {
         if (selectedFlight == null || string.IsNullOrWhiteSpace(passengerName) || string.IsNullOrWhiteSpace(passengerEmail))
             return;
 
         try
         {
-            var bookingRequest = new BookingRequest
+            var bookingRequest = new BookingRequestDto
                 {
                     PassengerName = passengerName,
-                    PassengerEmail = passengerEmail
+                    PassengerEmail = passengerEmail,
+                    FlightNumber = selectedFlight.FlightNumber
                 };
 
-            await BookingService.InitializeAsync();
-            var success = BookingService.BookFlight(bookingRequest);
+            var result = BookingService.BookFlight(bookingRequest);
 
-            if (success)
+            if (result == "Ok")
             {
-                flights.Remove(selectedFlight);
-                Console.WriteLine("Flight booked successfully!");
+                modalResult = "Flight booked successfully!";
+            }
+            else if (result == "NotFound")
+            {
+                modalResult = "Flight not found";
+            }
+            else if (result == "Out")
+            {
+                modalResult = "There is no free seat on that flight. sorry for that";
             }
             else
             {
-                Console.WriteLine("Failed to book the flight.");
+                modalResult = "Something went wrong";
             }
         }
         catch (Exception ex)
@@ -246,4 +290,3 @@ else if (flights != null)
         }
     }
 }
-

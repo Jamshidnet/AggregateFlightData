@@ -9,6 +9,7 @@ namespace BizLogicLayer.Services
 
     public interface IFlightAggregatorService
     {
-        Task<IEnumerable<Flight>> GetAggregatedFlightsAsync(FlightSearchCriteria criteria);
+        IEnumerable<Flight> GetAggregatedFlights(FlightSearchCriteria criteria);
+        string FlightCountMinimizer(int flightId, string passengerName, string passengerEmail);
     }
 }

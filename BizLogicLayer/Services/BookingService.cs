@@ -2,29 +2,29 @@
 
 namespace BizLogicLayer.Services
 {
-    public class BookingService
+    public class BookingService : IBookingService
     {
-        private List<Flight> _allFlights;
+        private readonly IFlightAggregatorService _flightAggregatorService;
 
-        public BookingService()
+        public BookingService(IFlightAggregatorService flightAggregatorService)
         {
+            _flightAggregatorService = flightAggregatorService;
         }
 
-        public async Task InitializeAsync()
-        {
-            _allFlights = (await MockFlightSource.GetFlightsFromSource1Async())
-                 .Concat(await MockFlightSource.GetFlightsFromSource2Async())
-                 .ToList();
-        }
 
-        public bool BookFlight(BookingRequest request)
+        public string BookFlight(BookingRequestDto request)
         {
-            //var flight = _allFlights.FirstOrDefault(f => f.FlightNumber == request.FlightNumber);
-            //if (flight == null || flight.IsBooked)
-            //    return false;
+            var flights = _flightAggregatorService.GetAggregatedFlights(new FlightSearchCriteria
+            {
+                FlightNumber = request.FlightNumber
+            });
 
-            //flight.IsBooked = true;
-            return true;
+            var flight = flights.FirstOrDefault();
+
+            if (flight == null)
+                return "NotFount";
+
+            return  _flightAggregatorService.FlightCountMinimizer(flight.Id, request.PassengerName, request.PassengerEmail);
         }
     }
 }

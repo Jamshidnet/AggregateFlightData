@@ -8,6 +8,7 @@
         public decimal? MaxPrice { get; set; }
         public int? MaxLayovers { get; set; }
         public string Airline { get; set; }
+        public string FlightNumber { get; set; }
     }
 
 }

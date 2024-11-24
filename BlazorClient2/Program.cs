@@ -22,10 +22,9 @@ namespace BlazorClient2
                 options.UseNpgsql(builder.Configuration.GetConnectionString("SecondSource")));
 
             builder.Services.AddScoped<HttpClient>();
-            builder.Services.AddScoped<FlightService>();
             builder.Services.AddScoped<IMemoryCache, MemoryCache>();
             builder.Services.AddScoped<IFlightAggregatorService, FlightAggregatorService>();
-            builder.Services.AddScoped<BookingService>();
+            builder.Services.AddScoped<IBookingService, BookingService>();
 
             var app = builder.Build();
 

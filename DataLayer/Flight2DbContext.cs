@@ -35,6 +35,8 @@ namespace DataLayer
 
             for (int i = 0; i < 1000; i++)  // Adjust the number of rows you want to insert
             {
+                var totalPlacesCount = random.Next(50, 200);
+
                 migrationBuilder.InsertData(
                     table: "Flights",
                     columns: new[] { "FlightNumber", "Airline", "Departure", "Destination", "DepartureTime", "ArrivalTime", "Price", "Layovers", "TotalPlacesCount", "AvialablePlacesCount" },
@@ -46,9 +48,10 @@ namespace DataLayer
                     new[] { "New York", "Los Angeles", "Chicago", "London", "Paris", "Tokyo", "Berlin" }[random.Next(7)],  // Destination City
                     DateTime.Now.AddDays(random.Next(0, 365)).ToUniversalTime(),  // Random Departure Time in the next year
                     DateTime.Now.AddDays(random.Next(1, 365)).ToUniversalTime(),  // Random Arrival Time
-                    random.Next(50, 1500) + random.NextDouble(),  
-                    random.Next(50, 200),
-                    random.Next(10, 20),
+                    random.Next(50, 1500) + random.NextDouble(),
+                    random.Next(0, 3),
+                    totalPlacesCount,
+                    totalPlacesCount
                     });
             }
         }
