@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
+<div class="page")">
     <div class="sidebar">
         <NavMenu />
     </div>
@@ -22,3 +22,10 @@
     <a class="dismiss">🗙</a>
 </div>
 
+
+@code {
+    bool IsSpecialPage => NavigationManager.Uri.Contains("flight-search");
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+}

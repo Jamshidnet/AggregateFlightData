@@ -2,6 +2,7 @@
 using DataLayer;
 using Microsoft.Extensions.Caching.Memory;
 using SharedModel.Models;
+using System.Linq.Dynamic.Core;
 
 namespace BizLogicLayer.Services
 {
@@ -37,7 +38,6 @@ namespace BizLogicLayer.Services
             foreach (var task in tasks)
                 allFlights.AddRange(task);
 
-            // Cache the result
             _cache.Set(cacheKey, allFlights, TimeSpan.FromMinutes(10));
 
             return allFlights;

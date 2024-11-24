@@ -3,6 +3,7 @@ using BlazorClient2.Components;
 using DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Serilog;
 
 namespace BlazorClient2
 {
@@ -12,9 +13,19 @@ namespace BlazorClient2
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            Log.Logger = new LoggerConfiguration()
+    .WriteTo.PostgreSQL(
+        connectionString: "Host=myserver;Database=mydb;Username=myuser;Password=mypassword",
+        tableName: "logs"
+        //columnOptions: new ColumnOptions { Store = { "Message", "Timestamp", "Level", "Exception" } }
+        )
+    .CreateLogger();
+
+            //builder.Host.UseSerilog();
+
             // Add services to the container.
             builder.Services.AddRazorComponents()
-                .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents();
 
             builder.Services.AddDbContext<FlightDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("FirstSource")));

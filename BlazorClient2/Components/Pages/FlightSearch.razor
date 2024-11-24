@@ -2,6 +2,8 @@
 @rendermode InteractiveServer
 @using BizLogicLayer.Services
 @using SharedModel.Models
+@using System.Linq.Dynamic.Core;
+@using BizLogicLayer.Extensions;
 @inject IBookingService BookingService
 @inject IFlightAggregatorService FlightAggregatorService
 
@@ -48,12 +50,36 @@
     <table class="table table-striped table-bordered">
         <thead class="thead-light">
             <tr>
-                <th>Flight Number</th>
-                <th>Departure</th>
-                <th>Destination</th>
-                <th>Price</th>
-                <th>Total Seats</th>
-                <th>Available Seats</th>
+                <th>
+                    <button class="btn btn-link p-0" @onclick="() => SortByColumn(nameof(Flight.FlightNumber))">
+                        Flight Number @SortIndicator(nameof(Flight.FlightNumber))
+                    </button>
+                </th>
+                <th>
+                    <button class="btn btn-link p-0" @onclick="() => SortByColumn(nameof(Flight.Departure))">
+                        Departure @SortIndicator(nameof(Flight.Departure))
+                    </button>
+                </th>
+                <th>
+                    <button class="btn btn-link p-0" @onclick="() => SortByColumn(nameof(Flight.Destination))">
+                        Destination @SortIndicator(nameof(Flight.Destination))
+                    </button>
+                </th>
+                <th>
+                    <button class="btn btn-link p-0" @onclick="() => SortByColumn(nameof(Flight.Price))">
+                        Price @SortIndicator(nameof(Flight.Price))
+                    </button>
+                </th>
+                <th>
+                    <button class="btn btn-link p-0" @onclick="() => SortByColumn(nameof(Flight.TotalPlacesCount))">
+                        Total Seats @SortIndicator(nameof(Flight.TotalPlacesCount))
+                    </button>
+                </th>
+                <th>
+                    <button class="btn btn-link p-0" @onclick="() => SortByColumn(nameof(Flight.AvialablePlacesCount))">
+                        Available Seats @SortIndicator(nameof(Flight.AvialablePlacesCount))
+                    </button>
+                </th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -78,7 +104,6 @@
             }
         </tbody>
     </table>
-
 
 
     <!-- Pagination controls -->
@@ -131,9 +156,9 @@ else if (flights != null)
     position: fixed;  height: 100%;
     background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center;
     align-items: center; z-index: 1050;">
-        <div class="modal" style=" 
-        background: #fff; padding: 20px; width: 300px ; top : unset; border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); text-align: center;display: flow; align-self : center;" >
+        <div class="modal" style="
+        background: #fff; padding: 20px; width: 300px ; top : unset;   height: 40%; left: unset; border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); text-align: center;display: flow; align-self : center; vertical-align: central;">
             <h3>Confirm Booking</h3>
             <p>Flight: @selectedFlight?.FlightNumber</p>
 
@@ -182,13 +207,41 @@ else if (flights != null)
     private int TotalPages => (int)Math.Ceiling(flights.Count / (double)ItemsPerPage);
     private bool IsFirstPage => CurrentPage == 1;
     private bool IsLastPage => CurrentPage == TotalPages;
+    private string SortColumn { get; set; } = nameof(Flight.FlightNumber);
+    private bool SortDescending { get; set; } = false;
+
+    private void SortByColumn(string column)
+    {
+        if (SortColumn == column)
+        {
+            SortDescending = !SortDescending;
+        }
+        else
+        {
+            SortColumn = column;
+            SortDescending = false;
+        }
+
+        SearchFlights();
+    }
+
+    private string SortIndicator(string column)
+    {
+        if (SortColumn == column)
+        {
+            return SortDescending ? "▼" : "▲";
+        }
+
+        return string.Empty;
+    }
 
     private void SearchFlights()
     {
         isLoading = true;
+
         try
         {
-            var result = FlightAggregatorService.GetAggregatedFlights(searchCriteria);
+            var result = FlightAggregatorService.GetAggregatedFlights(searchCriteria).OrderByColumn(SortColumn, SortDescending);
 
             flights = result.ToList();
         }
@@ -242,7 +295,10 @@ else if (flights != null)
 
     private string CloseBookingModal()
     {
-        // Return a message (you can customize this as needed)
+        showBookingModal = false;
+        passengerEmail = null;
+        passengerName = null;
+        selectedFlight = null;
         return "Booking canceled.";
     }
 
